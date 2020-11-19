@@ -47,7 +47,8 @@ CREATE FUNCTION addAFSCStoUnit(varchar,char(5)[]) RETURNS integer AS 'SELECT add
 CREATE FUNCTION addUnit(varchar,varchar,integer,char(5)[]) RETURNS SETOF AggregateUnits AS $func$
     DECLARE unit units%ROWTYPE;
     BEGIN
-        INSERT INTO units (name,location,size) VALUES ($1,$2,$3) RETURNING * INTO unit;
+        INSERT INTO units (name,location,size) VALUES ($1,$2,$3) ON CONFLICT (name) UPDATE SET name=$1, location=$2, size=$3 RETURNING * INTO unit;
+        DELETE FROM unit_afscs WHERE unit_id=unit.id;
         PERFORM addAFSCStoUnit(unit.id,$4);
         RETURN NEXT getUnit(unit.name);
         RETURN;
