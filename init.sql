@@ -44,12 +44,12 @@ CREATE FUNCTION addAFSCStoUnit(integer,char(5)[]) RETURNS integer AS $func$
     $func$ LANGUAGE plpgsql;
 CREATE FUNCTION addAFSCStoUnit(varchar,char(5)[]) RETURNS integer AS 'SELECT addAFSCStoUnit((SELECT id FROM units WHERE name=$1 LIMIT 1),$2);' LANGUAGE SQL;
 
-CREATE FUNCTION addUnit(varchar,varchar,integer,char(5)[]) RETURNS SETOF units AS $func$
+CREATE FUNCTION addUnit(varchar,varchar,integer,char(5)[]) RETURNS SETOF AggregateUnits AS $func$
     DECLARE unit units%ROWTYPE;
     BEGIN
         INSERT INTO units (name,location,size) VALUES ($1,$2,$3) RETURNING * INTO unit;
         PERFORM addAFSCStoUnit(unit.id,$4);
-        RETURN NEXT unit;
+        RETURN NEXT getUnit(unit.name);
         RETURN;
     END;
     $func$ LANGUAGE plpgsql;
