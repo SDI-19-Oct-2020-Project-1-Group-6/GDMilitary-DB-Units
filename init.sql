@@ -1,6 +1,6 @@
 CREATE TABLE units (
     id serial primary key, 
-    name varchar NOT NULL, 
+    name varchar NOT NULL UNIQUE, 
     location varchar NOT NULL, 
     size integer NOT NULL
 );
@@ -47,7 +47,7 @@ CREATE FUNCTION addAFSCStoUnit(varchar,char(5)[]) RETURNS integer AS 'SELECT add
 CREATE FUNCTION addUnit(varchar,varchar,integer,char(5)[]) RETURNS SETOF AggregateUnits AS $func$
     DECLARE unit units%ROWTYPE;
     BEGIN
-        INSERT INTO units (name,location,size) VALUES ($1,$2,$3) ON CONFLICT (name) UPDATE SET name=$1, location=$2, size=$3 RETURNING * INTO unit;
+        INSERT INTO units (name,location,size) VALUES ($1,$2,$3) ON CONFLICT (name) DO UPDATE SET name=$1, location=$2, size=$3 RETURNING * INTO unit;
         DELETE FROM unit_afscs WHERE unit_id=unit.id;
         PERFORM addAFSCStoUnit(unit.id,$4);
         RETURN NEXT getUnit(unit.name);
@@ -56,7 +56,7 @@ CREATE FUNCTION addUnit(varchar,varchar,integer,char(5)[]) RETURNS SETOF Aggrega
     $func$ LANGUAGE plpgsql;
 
 
-
+SELECT addAFSC('3d1x1','Computers or Something');
 SELECT addUnit('24NOS','BFE',5,NULL);
 SELECT addUnit('194CWS','Seattle, WA',10,array['1b4x4','3d1x1']);
 
